@@ -11,3 +11,7 @@ ffmpegapp 为简单的 Android Application 项目，其依赖于 jniffmpeg .
 参考资料
 -----
 [libffmpeg 编译参考资料](http://sunnybird.github.io/2017/04/14/%E5%9F%BA%E4%BA%8EAndroid%E5%B9%B3%E5%8F%B0%E7%BC%96%E8%AF%91FFmpeg-3-2-4/)
+
+填坑记录
+-----
+jniffmpeg 层需要用 C 源码(不是 cpp 源码)调用 ffmpeg API ，具体原因尚不知道，如果有什么见解，希望能分享一下.
