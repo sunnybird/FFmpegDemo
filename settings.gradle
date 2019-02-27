@@ -1,1 +1,1 @@
-include ':jniffmpeg', ':ffmpegapp'
+include ':jniffmpeg', ':ffmpegapp', ':camera2app'
