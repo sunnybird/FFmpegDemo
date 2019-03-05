@@ -1,25 +1,58 @@
 #include <jni.h>
 #include <android/log.h>
 #include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
+#include "stdio.h"
+#include <string.h>
+#include "decode_video.h"
+#include "nativelog.h"
 
-static const char* kTAG = "ffmpeg-native";
 
-#define LOGI(...) \
-  ((void)__android_log_print(ANDROID_LOG_INFO, kTAG, __VA_ARGS__))
-#define LOGW(...) \
-  ((void)__android_log_print(ANDROID_LOG_WARN, kTAG, __VA_ARGS__))
-#define LOGE(...) \
-  ((void)__android_log_print(ANDROID_LOG_ERROR, kTAG, __VA_ARGS__))
-#define LOGD(...) \
-  ((void)__android_log_print(ANDROID_LOG_DEBUG, kTAG, __VA_ARGS__))
 
 
 JNIEXPORT jstring JNICALL
-Java_io_bird_sunny_ffmpegdemo_FFmpengNative_stringFromJNI(
-		JNIEnv *env,
-		jobject  obj) {
-	LOGD(" the jni called.....");
-	const char * config = avcodec_configuration();
-	LOGD(" call ffmpeg avcodec_configuration : %s", config);
-	return (*env)->NewStringUTF(env,config);
+Java_io_bird_sunny_ffmpegdemo_FFmpengNative_getVersion(JNIEnv *env, jobject instance) {
+	// TODO
+    const char * verison = av_version_info();
+    const char * config =  avutil_configuration();
+    const char *out = (char *) malloc(strlen(verison) + strlen(config) + 1);
+    sprintf(out, "%s%s%s", verison,"\n", config);
+	return (*env)->NewStringUTF(env,out);
+
+}
+
+JNIEXPORT void JNICALL
+Java_io_bird_sunny_ffmpegdemo_FFmpengNative_decodeVideo(JNIEnv *env, jobject instance,
+														jstring inFilePath_, jstring outFilePath_) {
+
+	LOGD("decodeVideo");
+	const char *inFilePath = (*env)->GetStringUTFChars(env, inFilePath_, 0);
+	const char *outFilePath = (*env)->GetStringUTFChars(env, outFilePath_, 0);
+
+	// TODO
+	int ret = decode_video(inFilePath,outFilePath);
+
+	(*env)->ReleaseStringUTFChars(env, inFilePath_, inFilePath);
+	(*env)->ReleaseStringUTFChars(env, outFilePath_, outFilePath);
+}
+
+JNIEXPORT void JNICALL
+Java_io_bird_sunny_ffmpegdemo_FFmpengNative_decodeAudio(JNIEnv *env, jobject instance,
+														jstring inFilePath_, jstring outFilePath_) {
+
+
+	const char *inFilePath = (*env)->GetStringUTFChars(env, inFilePath_, 0);
+	const char *outFilePath = (*env)->GetStringUTFChars(env, outFilePath_, 0);
+
+	// TODO
+
+	(*env)->ReleaseStringUTFChars(env, inFilePath_, inFilePath);
+	(*env)->ReleaseStringUTFChars(env, outFilePath_, outFilePath);
+}
+
+JNIEXPORT void JNICALL
+Java_io_bird_sunny_ffmpegdemo_FFmpengNative_help(JNIEnv *env, jobject instance) {
+
+	// TODO
+	fprintf(stderr, "Error during decoding\n");
 }

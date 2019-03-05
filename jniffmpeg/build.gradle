@@ -1,19 +1,18 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 26
     defaultConfig {
-        minSdkVersion 23
-        targetSdkVersion 25
+        minSdkVersion 21
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
                 arguments '-DANDROID_PLATFORM=android-21',
-                          '-DANDROID_TOOLCHAIN=clang',
-                          '-DANDROID_ARM_NEON=TRUE'
+                        '-DANDROID_TOOLCHAIN=clang',
+                        '-DANDROID_ARM_NEON=TRUE'
 
             }
         }
@@ -21,9 +20,9 @@ android {
             // Specifies the ABI configurations of your native
             // libraries Gradle should build and package with your APK.
             abiFilters 'x86',
-                       'x86_64',
-                       'armeabi',
-                       'armeabi-v7a'
+                    'x86_64',
+                    'armeabi',
+                    'armeabi-v7a'
         }
     }
     buildTypes {
@@ -32,7 +31,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
     sourceSets {
         main {
             // let gradle pack the shared library into apk
@@ -41,7 +39,6 @@ android {
             ]
         }
     }
-
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"
@@ -50,10 +47,10 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
 }

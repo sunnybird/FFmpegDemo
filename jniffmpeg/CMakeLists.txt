@@ -12,11 +12,24 @@ add_library(libavcodec SHARED IMPORTED)
 set_target_properties(libavcodec PROPERTIES IMPORTED_LOCATION
     ${ffmpeg_DIR}/lib/${ANDROID_ABI}/libavcodec-57.so)
 
+message(STATUS "CMAKE_SOURCE_DIR ="${CMAKE_SOURCE_DIR})
+message(STATUS "ffmpeg_DIR ="${ffmpeg_DIR})
 
 ## avdevice
 add_library(libavdevice SHARED IMPORTED)
 set_target_properties(libavdevice PROPERTIES IMPORTED_LOCATION
     ${ffmpeg_DIR}/lib/${ANDROID_ABI}/libavcodec-57.so)
+
+## avutils
+add_library(libavutil SHARED IMPORTED)
+set_target_properties(libavutil PROPERTIES IMPORTED_LOCATION
+        ${ffmpeg_DIR}/lib/${ANDROID_ABI}/libavutil-55.so)
+
+
+## avformat
+add_library(libavformat SHARED IMPORTED)
+set_target_properties(libavformat PROPERTIES IMPORTED_LOCATION
+        ${ffmpeg_DIR}/lib/${ANDROID_ABI}/libavformat-57.so)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -28,7 +41,9 @@ add_library( # Sets the name of the library.
              # Sets the library as a shared library.
              SHARED
              # Provides a relative path to your source file(s).
-             src/main/cpp/ffmpeg-native.c )
+             src/main/cpp/ffmpeg-native.c
+             src/main/cpp/decode_video.c
+        )
 
 ## include
 target_include_directories(ffmpeg-jni-lib PUBLIC
@@ -52,4 +67,6 @@ target_link_libraries( # Specifies the target library.
                        android
                        libavcodec
                        libavdevice
+                       libavutil
+                       libavformat
                         )
