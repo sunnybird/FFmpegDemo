@@ -24,6 +24,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onDecodeVideo(View view) {
-        mFFmpengNative.decodeVideo("/Share/public/pp.pm4","/Share/public/pp.avi");
+        mFFmpengNative.decodeVideo("/Share/public/pp.mp4","/Share/public/pp.avi");
     }
 }
