@@ -22,6 +22,9 @@ public class FFmpengNative {
      *
      * 分离视频裸数据 格式为 264
      * ffmpeg -i pp.mp4 -codec copy -bsf: h264_mp4toannexb -f h264 pp.264
+     *
+     * 转换 h264 裸数据文件为 YUV 文件
+     * YUV 文件查看工具 ： XnView
      */
     public native void  decodeVideo(String inFilePath,String outFilePath);
 
