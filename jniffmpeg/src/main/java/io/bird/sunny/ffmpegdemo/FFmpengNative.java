@@ -19,6 +19,9 @@ public class FFmpengNative {
 
     /**
      * https://www.ffmpeg.org/doxygen/4.0/decode_video_8c-example.html
+     *
+     * 分离视频裸数据 格式为 264
+     * ffmpeg -i pp.mp4 -codec copy -bsf: h264_mp4toannexb -f h264 pp.264
      */
     public native void  decodeVideo(String inFilePath,String outFilePath);
 

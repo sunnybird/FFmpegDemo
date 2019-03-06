@@ -33,8 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/dict.h>
 #include "decode_video.h"
 #include "nativelog.h"
 #include "android/log.h"
@@ -95,7 +93,7 @@ int  decode_video(const char* srcPath, const char * desPath)
     filename    = srcPath;
     outfilename = desPath;
 
-    av_register_all();
+    avcodec_register_all();
 
     pkt = av_packet_alloc();
     if (!pkt)
@@ -104,43 +102,8 @@ int  decode_video(const char* srcPath, const char * desPath)
     memset(inbuf + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
 
-    AVFormatContext *fmt_ctx = NULL;
-    AVDictionaryEntry *tag = NULL;
-    int ret1;
-
-    fmt_ctx = avformat_alloc_context();
-
-
-    if ((ret1 = avformat_open_input(&fmt_ctx, filename, NULL, NULL)))
-        return ret1;
-    while ((tag = av_dict_get(fmt_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
-        LOGD("%s=%s\n", tag->key, tag->value);
-
-
-    // Retrieve stream information
-    if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
-        LOGD("Couldn't find stream information.");
-        return -1;
-    }
-
-    int videoStream = -1;
-
-    for(int i=0; i < fmt_ctx->nb_streams; i++ ){
-        if (fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO
-            && videoStream < 0) {
-            videoStream = i;
-        }
-    }
-
-    if (videoStream == -1) {
-        LOGD("Didn't find a video stream.");
-        return -1; // Didn't find a video stream
-    }
-
-    enum AVCodecID  avCodecID = fmt_ctx->streams[videoStream]->codecpar->codec_id;
-
     /* find the MPEG-1 video decoder */
-    codec = avcodec_find_decoder(avCodecID);
+    codec = avcodec_find_decoder(AV_CODEC_ID_H264);
     if (!codec) {
         LOGD("Codec not found\n");
         exit(1);
@@ -173,6 +136,9 @@ int  decode_video(const char* srcPath, const char * desPath)
         LOGD("Could not allocate video frame\n");
         exit(1);
     }
+
+//    av_init_packet(&pkt);
+
     while (!feof(f)) {
         /* read raw data from the input file */
         data_size = fread(inbuf, 1, INBUF_SIZE, f);
@@ -182,15 +148,29 @@ int  decode_video(const char* srcPath, const char * desPath)
         data = inbuf;
         while (data_size > 0) {
             ret = av_parser_parse2(parser, c, &pkt->data, &pkt->size,
-                                   data, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+                                   data, data_size, pkt->pts, pkt->dts, pkt->pos);
             if (ret < 0) {
                 LOGD("Error while parsing");
                 exit(1);
             }
             data      += ret;
             data_size -= ret;
-            if (pkt->size)
-                decode(c, frame, pkt, outfilename);
+
+            LOGD("pkt->size:%4d\n",pkt->size);
+            if (pkt->size == 0){
+                continue;
+            }
+
+
+            switch(parser->pict_type){
+                case AV_PICTURE_TYPE_I: LOGD("Type:I\t");break;
+                case AV_PICTURE_TYPE_P: LOGD("Type:P\t");break;
+                case AV_PICTURE_TYPE_B: LOGD("Type:B\t");break;
+                default: LOGD("Type:Other\t");break;
+            }
+            LOGD("Number:%4d\n",parser->output_picture_number);
+
+            decode(c, frame, pkt, outfilename);
         }
     }
     /* flush the decoder */
@@ -200,6 +180,7 @@ int  decode_video(const char* srcPath, const char * desPath)
     avcodec_free_context(&c);
     av_frame_free(&frame);
     av_packet_free(&pkt);
+    LOGD("decode_video finished");
     return 0;
 }
 
