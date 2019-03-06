@@ -137,8 +137,6 @@ int  decode_video(const char* srcPath, const char * desPath)
         exit(1);
     }
 
-//    av_init_packet(&pkt);
-
     while (!feof(f)) {
         /* read raw data from the input file */
         data_size = fread(inbuf, 1, INBUF_SIZE, f);
