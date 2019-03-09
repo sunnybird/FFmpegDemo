@@ -40,13 +40,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     private static final int STATE_PREVIEW = 0x01;
     private static final int STATE_WAITING_CAPTURE = 0x02;
-    private static final int STATE_PICTURE_TAKEN = 0x03 ;
+    private static final int STATE_PICTURE_TAKEN = 0x03;
     private SurfaceView mSurfaceView;
     private SurfaceHolder mSurfaceHolder;
-
-
     // camera
-
     private CameraManager mCameraManager;
 
     private CameraDevice mCameraDevice;
@@ -55,35 +52,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
 
     private String mCameraId;
-
     private Handler mHandler;
 
     private ImageReader mImageReader;
+
+    private ImageReader mImageReaderRecord;
+
+
     private CaptureRequest.Builder mPreviewBuilder;
-    private CameraCaptureSession.StateCallback mSessionPreviewStateCallback = new
-            CameraCaptureSession.StateCallback() {
-
-                @Override
-                public void onConfigured(CameraCaptureSession session) {
-                    Log.d("linc", "mSessionPreviewStateCallback onConfigured");
-                    mSession = session;
-                    try {
-                        mPreviewBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-                        mPreviewBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                                CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                        session.setRepeatingRequest(mPreviewBuilder.build(), mSessionCaptureCallback, mHandler);
-                    } catch (CameraAccessException e) {
-                        e.printStackTrace();
-                        Log.e("linc", "set preview builder failed." + e.getMessage());
-                    }
-                }
-
-                @Override
-                public void onConfigureFailed(CameraCaptureSession session) {
-
-                }
-            };
     private int mState;
     private CameraDevice.StateCallback DeviceStateCallback = new CameraDevice.StateCallback() {
 
@@ -112,6 +88,26 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     };
     private File mFile;
+    private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
+            = new ImageReader.OnImageAvailableListener() {
+
+        @Override
+        public void onImageAvailable(ImageReader reader) {
+            //当图片可得到的时候获取图片并保存
+
+            if (reader.getImageFormat() == ImageFormat.JPEG) {
+                mFile = new File(getFilesDir(), "demo.jpg");
+                mHandler.post(new ImageSaver(reader.acquireNextImage(), mFile, false));
+            }
+
+            if (reader.getImageFormat() == ImageFormat.YUV_420_888) {
+                mFile = new File(getFilesDir(), "demo.yuv");
+                mHandler.post(new ImageSaver(reader.acquireNextImage(), mFile, true));
+            }
+
+        }
+
+    };
     private CameraCaptureSession.CaptureCallback mSessionCaptureCallback =
             new CameraCaptureSession.CaptureCallback() {
 
@@ -158,16 +154,30 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 }
 
             };
-    private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
-            = new ImageReader.OnImageAvailableListener() {
+    private CameraCaptureSession.StateCallback mSessionPreviewStateCallback = new
+            CameraCaptureSession.StateCallback() {
 
-        @Override
-        public void onImageAvailable(ImageReader reader) {
-            //当图片可得到的时候获取图片并保存
-            mHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
-        }
+                @Override
+                public void onConfigured(CameraCaptureSession session) {
+                    Log.d("linc", "mSessionPreviewStateCallback onConfigured");
+                    mSession = session;
+                    try {
+                        mPreviewBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                        mPreviewBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                                CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                        session.setRepeatingRequest(mPreviewBuilder.build(), mSessionCaptureCallback, mHandler);
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                        Log.e("linc", "set preview builder failed." + e.getMessage());
+                    }
+                }
 
-    };
+                @Override
+                public void onConfigureFailed(CameraCaptureSession session) {
+
+                }
+            };
 
     private void createCameraCaptureSession() throws CameraAccessException {
         Log.d("linc", "createCameraCaptureSession");
@@ -189,11 +199,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mSurfaceHolder = mSurfaceView.getHolder();
         mSurfaceHolder.addCallback(this);
 
-
         mCameraManager = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
-
         mFile = new File(getFilesDir(), "demo.jpg");
-
 
     }
 
@@ -225,9 +232,19 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mHandler = new Handler(handlerThread.getLooper());
         try {
             mCameraId = "" + CameraCharacteristics.LENS_FACING_FRONT;
+
+            // 图片处理
             mImageReader = ImageReader.newInstance(mSurfaceView.getWidth(), mSurfaceView.getHeight(),
                     ImageFormat.JPEG,/*maxImages*/7);
             mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, mHandler);
+
+            // 视频处理
+
+            mImageReaderRecord = ImageReader.newInstance(mSurfaceView.getWidth(), mSurfaceView.getHeight(),
+                    ImageFormat.YUV_420_888, 10);
+
+            mImageReaderRecord.setOnImageAvailableListener(mOnImageAvailableListener, mHandler);
+
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -332,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     private void showToast(String s) {
 
-        Toast.makeText(this,s,Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -359,6 +376,42 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         lockFocus();
     }
 
+
+    private void startRecord() throws Exception {
+
+
+        final CaptureRequest.Builder builder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+
+        builder.addTarget(mImageReaderRecord.getSurface());
+
+        int rotation = this.getWindowManager().getDefaultDisplay().getRotation();
+        builder.set(CaptureRequest.JPEG_ORIENTATION, 90);
+
+        CaptureRequest captureRequest = builder.build();
+
+        CameraCaptureSession.CaptureCallback  captureCallback =
+                new CameraCaptureSession.CaptureCallback(){
+                    @Override
+                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                        super.onCaptureCompleted(session, request, result);
+                        Log.d("startRecord","onCaptureCompleted");
+
+                    }
+                };
+        mSession.capture(captureRequest,captureCallback,null);
+
+
+    }
+
+    public void onRecord(View view) {
+
+        try {
+            startRecord();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Saves a JPEG {@link Image} into the specified {@link File}.
      */
@@ -372,10 +425,12 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
          * The file we save the image into.
          */
         private final File mFile;
+        private boolean isappend;
 
-        ImageSaver(Image image, File file) {
+        ImageSaver(Image image, File file, boolean isappend) {
             mImage = image;
             mFile = file;
+            isappend = isappend;
         }
 
         @Override
@@ -385,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             buffer.get(bytes);
             FileOutputStream output = null;
             try {
-                output = new FileOutputStream(mFile);
+                output = new FileOutputStream(mFile, isappend);
                 output.write(bytes);
             } catch (IOException e) {
                 e.printStackTrace();

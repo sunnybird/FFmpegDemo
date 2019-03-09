@@ -1,7 +1,7 @@
 //
 // Created by fengjl on 2019/3/5.
 //
-
+#include "android/log.h"
 #ifndef FFMPEGDEMO_NATIVELOG_H
 #define FFMPEGDEMO_NATIVELOG_H
 static const char* kTAG = "ffmpeg-native";
@@ -15,3 +15,5 @@ static const char* kTAG = "ffmpeg-native";
   ((void)__android_log_print(ANDROID_LOG_DEBUG, kTAG, __VA_ARGS__))
 
 #endif //FFMPEGDEMO_NATIVELOG_H
+
+

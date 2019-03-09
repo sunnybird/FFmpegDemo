@@ -37,4 +37,20 @@ public class FFmpengNative {
     public native void help();
 
 
+    /**
+     * 分类 MP4 文件为 h264 视频和 mp3 音频文件
+     * 参考 https://blog.csdn.net/leixiaohua1020/article/details/39767055
+     * @param inFilePath
+     */
+    public native void convertMp4toAV(String inFilePath,String vfilepath,String afilepath);
+
+
+    /**
+     * 读取视频文件信息
+     * 参考 https://www.ffmpeg.org/doxygen/4.0/avio_reading_8c-example.html
+     * @param inFilePath
+     */
+    public native void avioReading(String inFilePath);
+
+
 }

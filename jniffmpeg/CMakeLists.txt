@@ -31,6 +31,12 @@ add_library(libavformat SHARED IMPORTED)
 set_target_properties(libavformat PROPERTIES IMPORTED_LOCATION
         ${ffmpeg_DIR}/lib/${ANDROID_ABI}/libavformat-57.so)
 
+
+## swcale
+add_library(libswscale SHARED IMPORTED)
+set_target_properties(libswscale PROPERTIES IMPORTED_LOCATION
+        ${ffmpeg_DIR}/lib/${ANDROID_ABI}/libswscale-4.so)
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
@@ -43,6 +49,8 @@ add_library( # Sets the name of the library.
              # Provides a relative path to your source file(s).
              src/main/cpp/ffmpeg-native.c
              src/main/cpp/decode_video.c
+             src/main/cpp/avio_reading.c
+             src/main/cpp/demuxer.c
         )
 
 ## include
@@ -69,4 +77,5 @@ target_link_libraries( # Specifies the target library.
                        libavdevice
                        libavutil
                        libavformat
+                        libswscale
                         )

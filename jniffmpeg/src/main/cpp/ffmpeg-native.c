@@ -1,10 +1,13 @@
 #include <jni.h>
-#include <android/log.h>
+
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
 #include "stdio.h"
 #include <string.h>
 #include "decode_video.h"
+#include "avio_reading.h"
+#include "demuxer.h"
+
 #include "nativelog.h"
 
 
@@ -55,4 +58,32 @@ Java_io_bird_sunny_ffmpegdemo_FFmpengNative_help(JNIEnv *env, jobject instance) 
 
 	// TODO
 	fprintf(stderr, "Error during decoding\n");
+}
+
+
+JNIEXPORT void JNICALL
+Java_io_bird_sunny_ffmpegdemo_FFmpengNative_avioReading(JNIEnv *env, jobject instance,
+                                                        jstring inFilePath_) {
+	const char *inFilePath = (*env)->GetStringUTFChars(env, inFilePath_, 0);
+	
+	// TODO
+	getAvioInfo(inFilePath);
+	
+	(*env)->ReleaseStringUTFChars(env, inFilePath_, inFilePath);
+}
+
+JNIEXPORT void JNICALL
+Java_io_bird_sunny_ffmpegdemo_FFmpengNative_convertMp4toAV(JNIEnv *env, jobject instance,
+                                                           jstring inFilePath_, jstring vfilepath_,
+                                                           jstring afilepath_) {
+	const char *inFilePath = (*env)->GetStringUTFChars(env, inFilePath_, 0);
+	const char *vfilepath = (*env)->GetStringUTFChars(env, vfilepath_, 0);
+	const char *afilepath = (*env)->GetStringUTFChars(env, afilepath_, 0);
+	
+	// TODO
+	demuxer_simple(inFilePath,vfilepath,afilepath);
+	
+	(*env)->ReleaseStringUTFChars(env, inFilePath_, inFilePath);
+	(*env)->ReleaseStringUTFChars(env, vfilepath_, vfilepath);
+	(*env)->ReleaseStringUTFChars(env, afilepath_, afilepath);
 }

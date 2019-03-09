@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import java.io.File;
+
 import io.bird.sunny.ffmpegdemo.FFmpengNative;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,6 +26,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onDecodeVideo(View view) {
-        mFFmpengNative.decodeVideo("/Share/public/pp.264","/Share/public/pp.yuv");
+        mFFmpengNative.decodeVideo("/data/share/pp.h264","/data/share/pp.yuv");
+    }
+
+    public void onGetVideoInfo(View view) {
+        File file = new File("/data/share/pp.mp4");
+        mFFmpengNative.avioReading(file.getAbsolutePath());
+    }
+
+    public void onConvert(View view) {
+
+      new Thread(new Runnable() {
+          @Override
+          public void run() {
+              mFFmpengNative.convertMp4toAV("/data/share/pp.mp4",
+                      "/data/share/pp.h264",
+                      "/data/share/pp.acc");
+          }
+      }).start();
     }
 }

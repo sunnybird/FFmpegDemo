@@ -49,6 +49,8 @@ static void pgm_save(unsigned char *buf, int wrap, int xsize, int ysize,
         fwrite(buf + i * wrap, 1, xsize, f);
     fclose(f);
 }
+
+
 static void decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
                    const char *filename)
 {
@@ -76,6 +78,9 @@ static void decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
                  frame->width, frame->height, buf);
     }
 }
+
+
+
 int  decode_video(const char* srcPath, const char * desPath)
 {
     const char *filename, *outfilename;
