@@ -48,11 +48,10 @@ static int i = 0;
 
 
 static void pgm_save(unsigned char *buf, int wrap, int xsize, int ysize,
-                     char *filename)
-{
+                     char *filename) {
 	FILE *f;
 	int i;
-	f = fopen(filename,"w");
+	f = fopen(filename, "w");
 	fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
 	for (i = 0; i < ysize; i++)
 		fwrite(buf + i * wrap, 1, xsize, f);
@@ -158,28 +157,40 @@ static int decode_packet(int *got_frame, int cached) {
 			     cached ? "(cached)" : "",
 			     video_frame_count++, frame->coded_picture_number,
 			     av_get_pix_fmt_name(frame->format));
+			
+			
+			//////////////// https://www.ffmpeg.org/doxygen/4.0/demuxing_decoding_8c-example.html
+			///////////////
 			/* copy decoded frame to destination buffer:
 			 * this is required since rawvideo expects non aligned data */
 			
 			
-//			av_image_copy(video_dst_data, video_dst_linesize,
-//			              (const uint8_t **) (frame->data), frame->linesize,
-//			              pix_fmt, width, height);
+			av_image_copy(video_dst_data, video_dst_linesize,
+			              (const uint8_t **) (frame->data), frame->linesize,
+			              pix_fmt, width, height);
 			
 			
 			/* write to rawvideo file */
-//			fwrite(video_dst_data[0], 1, video_dst_bufsize, video_des_file);
+			fwrite(video_dst_data[0], 1, video_dst_bufsize, video_des_file);
+
+			///////////////
+			///////////////
+
+
+
+			char buf[1024];
+			LOGD("saving frame %3d\n", video_dec_ctx->frame_number);
+			snprintf(buf, sizeof(buf), "%s-%d", video_des_filename, video_dec_ctx->frame_number);
+			pgm_save(frame->data[0], frame->linesize[0],
+			         frame->width, frame->height, buf);
 			
 			
-//			char buf[1024];
-//			LOGD("saving frame %3d\n", video_dec_ctx->frame_number);
-//			snprintf(buf, sizeof(buf), "%s-%d", video_des_filename, video_dec_ctx->frame_number);
-//			pgm_save(frame->data[0], frame->linesize[0],
-//			         frame->width, frame->height, buf);
-			
-			save_frame(frame,video_dec_ctx->width,video_dec_ctx->has_b_frames);
+			// save as yuv file
+//			save_frame(frame,video_dec_ctx->width,video_dec_ctx->has_b_frames);
 			
 		}
+		
+		
 	} else if (pkt.stream_index == audio_stream_index) {
 		/* decode audio frame */
 		ret = avcodec_decode_audio4(audio_dec_ctx, frame, got_frame, &pkt);
@@ -300,7 +311,7 @@ int demuxer_simple(const char *filepath, const char *vfilpath, const char *afile
 	audio_des_filename = afilepath;
 	
 	av_register_all();
-	av_log_set_callback(log_callback_android);
+//	av_log_set_callback(log_callback_android);
 	
 	pFrameRGB = av_frame_alloc();
 	
@@ -354,7 +365,7 @@ int demuxer_simple(const char *filepath, const char *vfilpath, const char *afile
 	                         video_dec_ctx->width,
 	                         video_dec_ctx->height,
 	                         AV_PIX_FMT_RGB24,
-	                         SWS_BILINEAR,
+	                         SWS_BICUBIC,
 	                         NULL,
 	                         NULL,
 	                         NULL
@@ -362,7 +373,7 @@ int demuxer_simple(const char *filepath, const char *vfilpath, const char *afile
 	
 	
 	/* dump input information to stderr */
-	av_dump_format(fmt_ctx, 0, src_filename, 0);
+//	av_dump_format(fmt_ctx, 0, src_filename, 0);
 	
 	if (!audio_st && !video_st) {
 		LOGE("Could not find audio or video stream in the input, aborting\n");

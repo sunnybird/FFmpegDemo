@@ -52,5 +52,7 @@ public class FFmpengNative {
      */
     public native void avioReading(String inFilePath);
 
+   public native void parseH264(String h264filepath);
+
 
 }

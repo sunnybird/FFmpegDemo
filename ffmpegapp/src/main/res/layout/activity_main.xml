@@ -49,6 +49,13 @@
                 android:text="convert mp4 to h264 and acc"
                 android:onClick="onConvert"
                 />
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="parse H264"
+                android:onClick="onParseH264"
+                />
+
         </LinearLayout>
     </ScrollView>
 

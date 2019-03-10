@@ -51,6 +51,7 @@ add_library( # Sets the name of the library.
              src/main/cpp/decode_video.c
              src/main/cpp/avio_reading.c
              src/main/cpp/demuxer.c
+             src/main/cpp/parseh264.c
         )
 
 ## include

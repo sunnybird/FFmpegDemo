@@ -11,6 +11,8 @@
 #include "nativelog.h"
 
 
+extern int simplest_h264_parser(char *url);
+
 
 
 JNIEXPORT jstring JNICALL
@@ -86,4 +88,19 @@ Java_io_bird_sunny_ffmpegdemo_FFmpengNative_convertMp4toAV(JNIEnv *env, jobject 
 	(*env)->ReleaseStringUTFChars(env, inFilePath_, inFilePath);
 	(*env)->ReleaseStringUTFChars(env, vfilepath_, vfilepath);
 	(*env)->ReleaseStringUTFChars(env, afilepath_, afilepath);
+}
+
+JNIEXPORT void JNICALL
+Java_io_bird_sunny_ffmpegdemo_FFmpengNative_parseH264(JNIEnv *env, jobject instance,
+                                                      jstring h264filepath_) {
+	const char *h264filepath = (*env)->GetStringUTFChars(env, h264filepath_, 0);
+	
+	// TODO
+	
+	printf("parseH264");
+	
+	simplest_h264_parser(h264filepath);
+	
+	
+	(*env)->ReleaseStringUTFChars(env, h264filepath_, h264filepath);
 }

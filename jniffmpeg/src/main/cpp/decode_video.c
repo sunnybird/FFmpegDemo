@@ -131,6 +131,8 @@ int  decode_video(const char* srcPath, const char * desPath)
         LOGD("Could not open codec\n");
         exit(1);
     }
+    
+    
     f = fopen(filename, "rb");
     if (!f) {
         LOGD("Could not open %s\n", filename);

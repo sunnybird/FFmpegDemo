@@ -6,6 +6,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.bird.sunny.ffmpegdemo.FFmpengNative;
 
@@ -14,6 +17,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTextView;
 
     private FFmpengNative mFFmpengNative;
+
+    private Executor mExecutor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
         mTextView.setText(mFFmpengNative.getVersion());
 
         mFFmpengNative.help();
+
+        mExecutor = Executors.newCachedThreadPool();
+
     }
 
     public void onDecodeVideo(View view) {
@@ -44,5 +53,17 @@ public class MainActivity extends AppCompatActivity {
                       "/data/share/pp.acc");
           }
       }).start();
+    }
+
+    public void onParseH264(View view) {
+
+
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                mFFmpengNative.parseH264("/data/share/pp.h264");
+            }
+        });
+
     }
 }
